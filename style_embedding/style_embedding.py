@@ -1,5 +1,6 @@
 import os
 import copy
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -9,6 +10,8 @@ from PIL import Image
 from CaffeLoader import loadCaffemodel, ModelParallel
 
 from tqdm import tqdm
+
+OUT_PATH = Path("/media/pawel/DATA/iwisum/results/embeddings/")
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -94,8 +97,11 @@ def perform_style_extraction(dtype, multidevice, cnn, layerList, dataset_name, s
         
         if params.verbose: print(f"Style embeddings tensor size for layer {layer_name}: {style_embeddings_tensor.size()}")
         
-        print(f"Saving style embeddings tensor for layer {layer_name} to `results/style_embeddings_{dataset_name}_{layer_name}_{number}.pt`")
-        torch.save(style_embeddings_tensor, f"results/style_embeddings_{dataset_name}_{layer_name}_{number}.pt")
+        out_name = f"{OUT_PATH}/{dataset_name}/style_embeddings_{dataset_name}_{layer_name}_{number}.pt"
+        os.makedirs(f"{OUT_PATH}/{dataset_name}", exist_ok=True)
+
+        print(f"Saving style embeddings tensor for layer {layer_name} to `{out_name}`")
+        torch.save(style_embeddings_tensor, out_name)
     
 
 
