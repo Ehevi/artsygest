@@ -1,5 +1,6 @@
 import os
 import copy
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -9,6 +10,8 @@ from PIL import Image
 from CaffeLoader import loadCaffemodel, ModelParallel
 
 from tqdm import tqdm
+
+OUT_PATH = Path("/media/pawel/DATA/iwisum/results/embeddings/")
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -61,10 +64,17 @@ def main():
         for item in style_image_list:
             f.write("%s\n" % item)
 
+    
     style_layers = params.style_layers.split(',')
-
-    style_embeddings_per_layer = [[] for _ in range(len(style_layers))]
+    
     print(f"Capturing styles...")
+    split_image_list = [style_image_list[i:i + 100] for i in range(0, len(style_image_list), 100)]
+    for i, split_image in tqdm(enumerate(split_image_list)):
+        perform_style_extraction(dtype, multidevice, cnn, layerList, dataset_name, split_image, style_layers, i)
+    print(f"Done capturing styles.")
+
+def perform_style_extraction(dtype, multidevice, cnn, layerList, dataset_name, style_image_list, style_layers, number):
+    style_embeddings_per_layer = [[] for _ in range(len(style_layers))]
     for img_name in tqdm(style_image_list):
         img_caffe = prepare_img_caffe(dtype, img_name)
         if img_caffe is None: continue
@@ -87,8 +97,11 @@ def main():
         
         if params.verbose: print(f"Style embeddings tensor size for layer {layer_name}: {style_embeddings_tensor.size()}")
         
-        print(f"Saving style embeddings tensor for layer {layer_name} to `style_embeddings_{dataset_name}_{layer_name}.pt`")
-        torch.save(style_embeddings_tensor, f"style_embeddings_{dataset_name}_{layer_name}.pt")
+        out_name = f"{OUT_PATH}/{dataset_name}/style_embeddings_{dataset_name}_{layer_name}_{number}.pt"
+        os.makedirs(f"{OUT_PATH}/{dataset_name}", exist_ok=True)
+
+        print(f"Saving style embeddings tensor for layer {layer_name} to `{out_name}`")
+        torch.save(style_embeddings_tensor, out_name)
     
 
 

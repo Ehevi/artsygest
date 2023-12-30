@@ -139,3 +139,6 @@ ENV/
 # End of file
 **/*.pt
 **/*.pth
+
+# Ignore image data
+style_embeddings/examples/**/*
