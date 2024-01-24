@@ -37,3 +37,6 @@ def image_to_color_code(image_path, sample_size=625, colorspace_divisions=4): #8
     sampled_pixels = random_sample_pixels(image, sample_size)
     return count_pixels_per_color_region(sampled_pixels, colorspace_divisions)
 
+
+if __name__=="__main__":
+    
